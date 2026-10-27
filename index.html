@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PA DET – Dashboard Penasihat Akademik</title>
+<style>
+  :root {
+    --primary:   #1a3a5c;
+    --primary-light: #2563a8;
+    --accent:    #e63946;
+    --gold:      #f4a61d;
+    --green:     #16a34a;
+    --green-bg:  #dcfce7;
+    --yellow:    #d97706;
+    --yellow-bg: #fef3c7;
+    --red:       #dc2626;
+    --red-bg:    #fee2e2;
+    --blue-bg:   #eff6ff;
+    --surface:   #f8fafc;
+    --border:    #e2e8f0;
+    --text:      #1e293b;
+    --muted:     #64748b;
+    --white:     #ffffff;
+    --radius:    10px;
+    --shadow:    0 2px 12px rgba(0,0,0,.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #eef2f7; color: var(--text); font-size: 14px; }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    color: var(--white);
+    padding: 0;
+  }
+  .header-top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 28px 12px;
+    border-bottom: 1px solid rgba(255,255,255,.15);
+  }
+  .header-logo { display: flex; align-items: center; gap: 14px; }
+  .logo-box {
+    width: 52px; height: 52px; border-radius: 8px;
+    background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px; color: var(--primary); line-height: 1.2; text-align: center;
+    border: 2px solid var(--gold);
+  }
+  .header-title h1 { font-size: 22px; font-weight: 700; letter-spacing: .5px; }
+  .header-title p  { font-size: 12px; opacity: .8; margin-top: 2px; }
+  .header-meta { text-align: right; font-size: 12px; opacity: .85; line-height: 1.8; }
+  .header-meta strong { font-size: 13px; }
+  .header-tabs {
+    display: flex; gap: 4px; padding: 0 28px;
+  }
+  .tab-btn {
+    padding: 10px 22px; font-size: 13px; font-weight: 600;
+    border: none; cursor: pointer; border-radius: 8px 8px 0 0;
+    background: rgba(255,255,255,.12); color: rgba(255,255,255,.75);
+    transition: background .2s, color .2s;
+  }
+  .tab-btn.active { background: var(--white); color: var(--primary); }
+  .tab-btn:hover:not(.active) { background: rgba(255,255,255,.22); color: var(--white); }
+
+  /* ── MAIN CONTAINER ── */
+  .container { max-width: 1280px; margin: 0 auto; padding: 24px 20px; }
+
+  /* ── STAT CARDS ── */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px,1fr)); gap: 14px; margin-bottom: 22px; }
+  .stat-card {
+    background: var(--white); border-radius: var(--radius);
+    padding: 16px 18px; box-shadow: var(--shadow);
+    border-left: 4px solid var(--primary-light);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-card.warn  { border-left-color: var(--yellow); }
+  .stat-card.alert { border-left-color: var(--red); }
+  .stat-card.ok    { border-left-color: var(--green); }
+  .stat-card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; }
+  .stat-card .value { font-size: 28px; font-weight: 700; color: var(--primary); }
+  .stat-card.warn  .value { color: var(--yellow); }
+  .stat-card.alert .value { color: var(--red); }
+  .stat-card.ok    .value { color: var(--green); }
+  .stat-card .sub  { font-size: 11px; color: var(--muted); }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    background: var(--white); border-radius: var(--radius);
+    padding: 14px 18px; box-shadow: var(--shadow);
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    margin-bottom: 18px;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 220px; }
+  .search-wrap input {
+    width: 100%; padding: 9px 12px 9px 36px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 13px; outline: none; transition: border-color .2s;
+    background: var(--surface);
+  }
+  .search-wrap input:focus { border-color: var(--primary-light); background: var(--white); }
+  .search-icon {
+    position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); font-size: 15px; pointer-events: none;
+  }
+  .filter-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .filter-group select, .filter-group button {
+    padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 13px; background: var(--surface); color: var(--text); outline: none; cursor: pointer;
+    transition: border-color .2s;
+  }
+  .filter-group select:focus { border-color: var(--primary-light); }
+  .btn-reset {
+    padding: 9px 16px; background: var(--primary); color: var(--white);
+    border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-reset:hover { background: var(--primary-light); }
+  .btn-export {
+    padding: 9px 16px; background: var(--green); color: var(--white);
+    border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-export:hover { background: #15803d; }
+
+  /* ── TABLE PANEL ── */
+  .panel { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .panel-header {
+    padding: 14px 20px; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .panel-header h2 { font-size: 15px; font-weight: 700; color: var(--primary); }
+  .panel-header span { font-size: 12px; color: var(--muted); }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: var(--primary); }
+  thead th {
+    padding: 11px 14px; text-align: left;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    color: var(--white); white-space: nowrap;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:hover { background: var(--blue-bg); }
+  tbody td { padding: 11px 14px; font-size: 13px; vertical-align: middle; }
+  tbody tr:last-child { border-bottom: none; }
+  .no-data { text-align: center; color: var(--muted); padding: 40px; font-size: 13px; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+  }
+  .badge-ok     { background: var(--green-bg); color: var(--green); }
+  .badge-warn   { background: var(--yellow-bg); color: var(--yellow); }
+  .badge-alert  { background: var(--red-bg); color: var(--red); }
+  .badge-sem    { background: var(--blue-bg); color: var(--primary-light); }
+  .badge-pra    { background: #fdf4ff; color: #7e22ce; }
+  .badge-kb     { background: #d1fae5; color: #065f46; }
+  .badge-ks     { background: #fef3c7; color: #92400e; }
+  .badge-gagal  { background: #fee2e2; color: #991b1b; font-weight:800; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+
+  /* ── KREDIT BAR ── */
+  .kredit-bar { display: flex; align-items: center; gap: 8px; }
+  .kredit-track {
+    flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; min-width: 60px;
+  }
+  .kredit-fill { height: 100%; border-radius: 4px; transition: width .3s; }
+  .fill-ok    { background: var(--green); }
+  .fill-warn  { background: var(--yellow); }
+  .fill-alert { background: var(--red); }
+  .kredit-num { font-size: 12px; font-weight: 700; white-space: nowrap; }
+
+  /* ── AMARAN PANEL ── */
+  .amaran-list { padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .amaran-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 14px; border-radius: 8px; font-size: 13px;
+  }
+  .amaran-item.type-alert { background: var(--red-bg); border-left: 3px solid var(--red); }
+  .amaran-item.type-warn  { background: var(--yellow-bg); border-left: 3px solid var(--yellow); }
+  .amaran-item.type-info  { background: var(--blue-bg); border-left: 3px solid var(--primary-light); }
+  .amaran-icon { font-size: 16px; margin-top: 1px; }
+  .amaran-text strong { display: block; font-weight: 700; margin-bottom: 2px; }
+
+  /* ── STRUKTUR KURIKULUM TAB ── */
+  .kuri-section { padding: 18px 20px; }
+  .kuri-sem-title {
+    font-size: 14px; font-weight: 800; color: var(--white);
+    background: var(--primary); padding: 10px 18px; border-radius: 8px 8px 0 0;
+    margin-top: 18px; letter-spacing: .4px;
+  }
+  .kuri-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  .kuri-table th {
+    background: #374151; color: var(--white);
+    padding: 8px 12px; font-size: 11px; text-align: center; white-space: nowrap;
+  }
+  .kuri-table th:first-child, .kuri-table th:nth-child(2), .kuri-table th:nth-child(3) { text-align: left; }
+  .kuri-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; text-align: center; }
+  .kuri-table td:first-child, .kuri-table td:nth-child(2), .kuri-table td:nth-child(3) { text-align: left; }
+  .kuri-table tr:hover td { background: var(--blue-bg); }
+  .kuri-table .total-row td { background: #d9f99d; font-weight: 800; }
+  .comp-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700;
+  }
+  .comp-compulsory { background: #fde68a; color: #92400e; }
+  .comp-common     { background: #bfdbfe; color: #1e40af; }
+  .comp-discipline { background: #ddd6fe; color: #5b21b6; }
+  .kuri-note { font-size: 11px; color: var(--red); padding: 6px 0 0 4px; font-style: italic; }
+
+  /* ── DETAIL MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,.45); z-index: 1000;
+    justify-content: center; align-items: flex-start; padding: 40px 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--white); border-radius: 14px;
+    width: 100%; max-width: 680px; max-height: 85vh;
+    overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  .modal-header {
+    background: var(--primary); color: var(--white);
+    padding: 16px 22px; border-radius: 14px 14px 0 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-header h3 { font-size: 15px; font-weight: 700; }
+  .modal-close { background: none; border: none; color: var(--white); font-size: 20px; cursor: pointer; line-height: 1; }
+  .modal-body { padding: 20px 22px; }
+  .modal-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-bottom: 18px; }
+  .modal-info-item .lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+  .modal-info-item .val { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .modal-courses-title { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+  .modal-course-row { display: flex; justify-content: space-between; padding: 7px 10px; border-radius: 6px; font-size: 12px; }
+  .modal-course-row:nth-child(odd) { background: var(--surface); }
+  .modal-course-row .ccode { font-family: monospace; color: var(--primary-light); font-weight: 700; min-width: 90px; }
+  .modal-course-row .cname { flex: 1; }
+  .modal-course-row .ckredit { font-weight: 700; color: var(--primary); }
+
+  /* ── FOOTER ── */
+  footer { text-align: center; padding: 20px; color: var(--muted); font-size: 11px; border-top: 1px solid var(--border); margin-top: 10px; }
+
+  /* ── PAGE SECTIONS ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  @media (max-width: 640px) {
+    .header-top { flex-direction: column; gap: 12px; text-align: center; }
+    .header-meta { text-align: center; }
+    .toolbar { flex-direction: column; }
+    .modal-info-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-top">
+    <div class="header-logo">
+      <div class="logo-box">POLI<br>TVET</div>
+      <div class="header-title">
+        <h1>PA DET</h1>
+        <p>Dashboard Penasihat Akademik · Jabatan Kejuruteraan Elektrik · DET</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <strong>Program: Diploma Elektrik &amp; Elektronik (DET)</strong><br>
+      <span id="headerSesi">Sesi 1: 2026/2027 (Sem 1) &nbsp;→&nbsp; Sesi 2: 2026/2027 (Sem 2)</span><br>
+      <span id="clock"></span>
+    </div>
+  </div>
+  <div class="header-tabs">
+    <button class="tab-btn active" onclick="showTab('pemantauan')">📋 Pemantauan Pelajar</button>
+    <button class="tab-btn" onclick="showTab('progres')">📈 Progres Pelajar</button>
+    <button class="tab-btn" onclick="showTab('amaran')">⚠️ Amaran &amp; Isu</button>
+    <button class="tab-btn" onclick="showTab('kurikulum')">📚 Struktur Kurikulum</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ── STAT CARDS ── -->
+  <div class="stat-row" id="statRow"></div>
+
+  <!-- ══════════ TAB 1: PEMANTAUAN ══════════ -->
+  <div class="page active" id="page-pemantauan">
+
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Cari nama pelajar atau no. matrik…" oninput="renderTable()"/>
+      </div>
+      <div class="filter-group">
+        <select id="filterSesi" onchange="renderTable()">
+          <option value="">Semua Sesi</option>
+          <option value="Sesi 1-2026/2027">Sesi 1: 2026/2027 (Sem 1)</option>
+          <option value="Sesi 2-2026/2027">Sesi 2: 2026/2027 (Sem 2)</option>
+        </select>
+        <select id="filterStatus" onchange="renderTable()">
+          <option value="">Semua Status</option>
+          <option value="Lengkap">✅ Lengkap</option>
+          <option value="Kredit Kurang">⚠️ Kredit Kurang</option>
+          <option value="Prasyarat">🔴 Isu Prasyarat</option>
+          <option value="Tiada Pendaftaran">🚫 Tiada Pendaftaran</option>
+          <option value="Melebihi Had">🔺 Melebihi Had Kredit</option>
+        </select>
+        <select id="filterKedudukan" onchange="renderTable()">
+          <option value="">Semua Kedudukan</option>
+          <option value="KB">🟢 Kedudukan Baik (KB)</option>
+          <option value="KS">🟡 Kedudukan Bersyarat (KS)</option>
+          <option value="GB">🔴 Gagal Berhenti (GB)</option>
+        </select>
+        <button class="btn-reset" onclick="resetFilter()">↺ Reset</button>
+        <button class="btn-export" onclick="exportCSV()">⬇ Eksport CSV</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <h2>Senarai Pelajar Mentee</h2>
+        <span id="tableCount">—</span>
+      </div>
+      <div class="table-wrap">
+        <table id="mainTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>No. Matrik</th>
+              <th>Nama Pelajar</th>
+              <th>Sem</th>
+              <th>HPNM</th>
+              <th>PNM Sem Ini</th>
+              <th>Kedudukan</th>
+              <th>Had Kredit</th>
+              <th>Kredit Didaftar</th>
+              <th>Status Pendaftaran</th>
+              <th>Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="mainTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 2: PROGRES ══════════ -->
+  <div class="page" id="page-progres">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>📈 Progres Akademik Pelajar (Sem 1 → Sem 2)</h2>
+        <span>Perbandingan HPNM, kredit &amp; status merentas sesi</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>No. Matrik</th>
+              <th>Nama Pelajar</th>
+              <th>Sem 1 – PNM</th>
+              <th>Sem 1 – Status</th>
+              <th>Sem 1 – Kredit</th>
+              <th>HPNM Masuk Sem 2</th>
+              <th>Sem 2 – PNM</th>
+              <th>Sem 2 – Status</th>
+              <th>Sem 2 – Kredit</th>
+              <th>HPNM Terkini</th>
+              <th>Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="progresTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 3: AMARAN ══════════ -->
+  <div class="page" id="page-amaran">
+    <div class="panel">
+      <div class="panel-header">
+        <h2>⚠️ Senarai Amaran &amp; Isu Pendaftaran</h2>
+        <span id="amaranCount">—</span>
+      </div>
+      <div class="amaran-list" id="amaranList"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB 4: KURIKULUM ══════════ -->
+  <div class="page" id="page-kurikulum">
+    <div class="panel">
+      <div class="panel-header"><h2>📚 Struktur Kurikulum DET – Sesi 2026/2027</h2><span>Kurikulum 2025</span></div>
+      <div class="kuri-section" id="kuriSection"></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ── MODAL DETAIL ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <h3 id="modalTitle">Detail Pelajar</h3>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<footer>Sistem Pemantauan PA DET &nbsp;·&nbsp; Politeknik Malaysia &nbsp;·&nbsp; <span id="footerYear"></span> &nbsp;|&nbsp; Made with IBM Bob</footer>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA KURIKULUM
+// ══════════════════════════════════════════════
+const KURIKULUM = {
+  1: {
+    judul: 'Semester 1 (Kurikulum 2025)',
+    kreditSasaran: 17,
+    kursus: [
+      { kod:'MPU24031', nama:'Sukan 1',                               komponen:'COMPULSORY',  l:0,p:2,t:0, kredit:1 },
+      { kod:'MPU24041', nama:'Kelab/Persatuan 1',                     komponen:'COMPULSORY',  l:0,p:0,t:0, kredit:0 },
+      { kod:'MPU24XX1', nama:'Unit Beruniform 1',                     komponen:'COMPULSORY',  l:0,p:0,t:0, kredit:0 },
+      { kod:'MPU21072', nama:'Penghayatan Etika dan Peradaban',        komponen:'COMPULSORY',  l:1,p:0,t:2, kredit:2 },
+      { kod:'DUW10042', nama:'Occupational Safety & Health for Eng.', komponen:'COMMON CORE', l:2,p:0,t:0, kredit:2 },
+      { kod:'DBM20233', nama:'Engineering Mathematics',               komponen:'COMMON CORE', l:2,p:0,t:2, kredit:3 },
+      { kod:'DEE10273', nama:'Measurement and Instrumentation',       komponen:'DISCIPLINE',  l:1,p:4,t:0, kredit:3 },
+      { kod:'DET10103', nama:'Electrical Circuits 1',                 komponen:'DISCIPLINE',  l:2,p:2,t:0, kredit:3 },
+      { kod:'DET10213', nama:'Electrical Wiring Workshop',            komponen:'DISCIPLINE',  l:0,p:6,t:0, kredit:3 },
+    ],
+    nota: '**Pelajar dari Kolej Komuniti perlu tambah pendaftaran DUE30072 Technical English 2 (total = 19 kredit)'
+  },
+  2: {
+    judul: 'Semester 2 (Kurikulum 2025)',
+    kreditSasaran: 17,
+    kursus: [
+      { kod:'MPU24051', nama:'Sukan 2',               komponen:'COMPULSORY',  l:0,p:2,t:0, kredit:1 },
+      { kod:'MPU24061', nama:'Kelab/Persatuan 2',     komponen:'COMPULSORY',  l:0,p:0,t:0, kredit:0 },
+      { kod:'MPU24XX1', nama:'Unit Beruniform 2',     komponen:'COMPULSORY',  l:0,p:0,t:0, kredit:0 },
+      { kod:'DUE30072', nama:'Technical English 2',   komponen:'COMPULSORY',  l:1,p:0,t:2, kredit:2 },
+      { kod:'DBS10042', nama:'Engineering Science',   komponen:'COMMON CORE', l:2,p:1,t:0, kredit:2 },
+      { kod:'DBM30243', nama:'Numerical Analysis',    komponen:'COMMON CORE', l:2,p:0,t:2, kredit:3 },
+      { kod:'DEC20313', nama:'C Programming',         komponen:'DISCIPLINE',  l:1,p:4,t:0, kredit:3 },
+      { kod:'DEE20153', nama:'Digital Electronics',   komponen:'DISCIPLINE',  l:2,p:2,t:0, kredit:3 },
+      { kod:'DET20123', nama:'Electrical Circuits 2', komponen:'DISCIPLINE',  l:2,p:2,t:0, kredit:3 },
+    ],
+    nota: null
+  }
+};
+
+// PRASYARAT (kod → prasyarat yang perlu lulus)
+const PRASYARAT = {
+  'DET20123': ['DET10103'],
+  'DEE20153': ['DEE10273'],
+  'DBM30243': ['DBM20233'],
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  DATA PELAJAR — 15 pelajar sama, ditrack Sem 1 → Sem 2
+//
+//  sesi:        'Sesi 1-2026/2027' = Sem 1  |  'Sesi 2-2026/2027' = Sem 2
+//  hpnmMasuk:   Sem 1 = 0 (tiada).  Sem 2 = hpnmAkhir Sem 1 (untuk had kredit)
+//  pnm:         PNM semester berkenaan (Sem 2 belum ada → null)
+//  hpnmAkhir:   HPNM selepas sem (Sem 2 belum ada → null)
+//  gred:        { kodKursus: 'A/B+/B/C+/C/D/E/TL/—' } — Sem 1 sahaja (Sem 2 null)
+//  lulusSebelum: kursus Sem 1 yang LULUS (gred ≥ D) — untuk semak prasyarat Sem 2
+// ══════════════════════════════════════════════════════════════════
+const pelajarData = [
+
+  // ════════════════════════════════════════════
+  //  SESI 1 – 2026/2027  (Sem 1)
+  //  tiada kedudukan/had kredit — semester pertama
+  //  pnm & hpnmAkhir ada (keputusan sudah keluar)
+  // ════════════════════════════════════════════
+
+  // 01 – Ahmad Firdaus: lulus semua, prestasi baik
+  { matrik:'23DET001', nama:'Ahmad Firdaus bin Hamid',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:3.52, hpnmAkhir:3.52,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'],
+    gred:{'MPU24031':'B+','MPU21072':'A','DUW10042':'A','DBM20233':'B+','DEE10273':'B+','DET10103':'A-','DET10213':'A'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 02 – Nur Aisyah: cemerlang
+  { matrik:'23DET002', nama:'Nur Aisyah binti Zakaria',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:3.78, hpnmAkhir:3.78,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'],
+    gred:{'MPU24031':'A','MPU21072':'A','DUW10042':'A','DBM20233':'A','DEE10273':'A-','DET10103':'A','DET10213':'A'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 03 – Luqmanul Hakim: daftar kurang kursus, gagal sebahagian
+  { matrik:'23DET003', nama:'Luqmanul Hakim bin Idris',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:1.72, hpnmAkhir:1.72,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233'],
+    gred:{'MPU24031':'C','MPU21072':'C+','DUW10042':'C','DBM20233':'D'},
+    lulusSebelum:['MPU21072','DUW10042'] },
+
+  // 04 – Farhana: lengkap & lulus semua
+  { matrik:'23DET004', nama:'Farhana binti Mohd Noor',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:2.15, hpnmAkhir:2.15,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'],
+    gred:{'MPU24031':'B','MPU21072':'B','DUW10042':'B','DBM20233':'C+','DEE10273':'C+','DET10103':'C+','DET10213':'B'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 05 – Zulkifli: daftar sedikit, PNM rendah (GB masuk Sem 2)
+  { matrik:'23DET005', nama:'Zulkifli bin Othman',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:0.75, hpnmAkhir:0.75,
+    kursus:['MPU24031','MPU21072'],
+    gred:{'MPU24031':'D','MPU21072':'E'},
+    lulusSebelum:['MPU24031'] },
+
+  // 06 – Hanis Syazwani: baik, lulus semua
+  { matrik:'23DET006', nama:'Hanis Syazwani binti Ramli',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:2.91, hpnmAkhir:2.91,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'],
+    gred:{'MPU24031':'B+','MPU21072':'B+','DUW10042':'B+','DBM20233':'B','DEE10273':'B','DET10103':'B+','DET10213':'B+'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 07 – Izzat Hakimi: daftar kurang, gagal subjek teras
+  { matrik:'23DET007', nama:'Izzat Hakimi bin Zainal',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:1.60, hpnmAkhir:1.60,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233'],
+    gred:{'MPU24031':'C+','MPU21072':'C','DUW10042':'C+','DBM20233':'C'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233'] },
+
+  // 08 – Syafiqah: terbaik
+  { matrik:'23DET008', nama:'Syafiqah binti Abdul Wahab',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:3.95, hpnmAkhir:3.95,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'],
+    gred:{'MPU24031':'A','MPU21072':'A','DUW10042':'A','DBM20233':'A','DEE10273':'A','DET10103':'A','DET10213':'A'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 09 – Mukhriz Danial: PNM 0.90, GB masuk Sem 2
+  { matrik:'23DET009', nama:'Mukhriz Danial bin Razif',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:0.90, hpnmAkhir:0.90,
+    kursus:['MPU24031','MPU21072','DUW10042'],
+    gred:{'MPU24031':'D','MPU21072':'E','DUW10042':'D'},
+    lulusSebelum:['MPU24031','DUW10042'] },
+
+  // 10 – Norzakirah: stabil
+  { matrik:'23DET010', nama:'Norzakirah binti Sulaiman',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:2.44, hpnmAkhir:2.44,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'],
+    gred:{'MPU24031':'B','MPU21072':'B+','DUW10042':'B','DBM20233':'B','DEE10273':'C+','DET10103':'B','DET10213':'B'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 11 – Afiq Irfan: bagus
+  { matrik:'23DET011', nama:'Afiq Irfan bin Mohamad',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:2.70, hpnmAkhir:2.70,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'],
+    gred:{'MPU24031':'B+','MPU21072':'B+','DUW10042':'B','DBM20233':'B','DEE10273':'B','DET10103':'B','DET10213':'B+'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 12 – Nur Dania: cemerlang
+  { matrik:'23DET012', nama:'Nur Dania binti Kamaruddin',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:3.20, hpnmAkhir:3.20,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'],
+    gred:{'MPU24031':'A-','MPU21072':'A','DUW10042':'A-','DBM20233':'B+','DEE10273':'B+','DET10103':'A-','DET10213':'A-'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 13 – Hazwan Asyraf: KS, tak lulus teras
+  { matrik:'23DET013', nama:'Hazwan Asyraf bin Shamsul',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:1.88, hpnmAkhir:1.88,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233'],
+    gred:{'MPU24031':'C+','MPU21072':'C+','DUW10042':'C','DBM20233':'C+'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233'] },
+
+  // 14 – Ameera Sofea: stabil
+  { matrik:'23DET014', nama:'Ameera Sofea binti Johari',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:2.55, hpnmAkhir:2.55,
+    kursus:['MPU24031','MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'],
+    gred:{'MPU24031':'B','MPU21072':'B+','DUW10042':'B','DBM20233':'B','DEE10273':'B','DET10103':'B','DET10213':'B+'},
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 15 – Khairul Anuar: GB (PNM 0.80)
+  { matrik:'23DET015', nama:'Khairul Anuar bin Hashim',
+    sesi:'Sesi 1-2026/2027', sem:1, hpnmMasuk:null, pnm:0.80, hpnmAkhir:0.80,
+    kursus:['MPU24031','MPU21072'],
+    gred:{'MPU24031':'E','MPU21072':'E'},
+    lulusSebelum:[] },
+
+  // ═══════════════════════════════════════════════════════
+  //  SESI 2 – 2026/2027  (Sem 2)
+  //  hpnmMasuk = hpnmAkhir Sem 1 → guna untuk had kredit
+  //  pnm = null, hpnmAkhir = null (keputusan belum keluar)
+  //  kursus = kursus yang SEDANG didaftar untuk Sem 2
+  //  gred = null (belum ada keputusan)
+  // ═══════════════════════════════════════════════════════
+
+  // 01 – Ahmad Firdaus: HPNM 3.52 → KB, lulus semua Sem 1
+  { matrik:'23DET001', nama:'Ahmad Firdaus bin Hamid',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:3.52, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DBM30243','DEC20313','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 02 – Nur Aisyah: HPNM 3.78 → KB
+  { matrik:'23DET002', nama:'Nur Aisyah binti Zakaria',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:3.78, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DBM30243','DEC20313','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 03 – Luqmanul Hakim: HPNM 1.72 → KS (max 12kr)
+  { matrik:'23DET003', nama:'Luqmanul Hakim bin Idris',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:1.72, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DEC20313'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042'] },
+
+  // 04 – Farhana: HPNM 2.15 → KB
+  { matrik:'23DET004', nama:'Farhana binti Mohd Noor',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:2.15, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DBM30243','DEC20313','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 05 – Zulkifli: HPNM 0.75 → GB, dilarang daftar
+  { matrik:'23DET005', nama:'Zulkifli bin Othman',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:0.75, pnm:null, hpnmAkhir:null,
+    kursus:[],
+    gred:null,
+    lulusSebelum:['MPU24031'] },
+
+  // 06 – Hanis Syazwani: HPNM 2.91 → KB
+  { matrik:'23DET006', nama:'Hanis Syazwani binti Ramli',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:2.91, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DBM30243','DEC20313','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 07 – Izzat Hakimi: HPNM 1.60 → KS; daftar DEE20153 & DET20123 tanpa prasyarat
+  { matrik:'23DET007', nama:'Izzat Hakimi bin Zainal',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:1.60, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233'] },
+
+  // 08 – Syafiqah: HPNM 3.95 → KB
+  { matrik:'23DET008', nama:'Syafiqah binti Abdul Wahab',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:3.95, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DBM30243','DEC20313','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 09 – Mukhriz Danial: HPNM 0.90 → GB, dilarang daftar
+  { matrik:'23DET009', nama:'Mukhriz Danial bin Razif',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:0.90, pnm:null, hpnmAkhir:null,
+    kursus:[],
+    gred:null,
+    lulusSebelum:['MPU24031','DUW10042'] },
+
+  // 10 – Norzakirah: HPNM 2.44 → KB
+  { matrik:'23DET010', nama:'Norzakirah binti Sulaiman',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:2.44, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DBM30243','DEC20313','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 11 – Afiq Irfan: HPNM 2.70 → KB
+  { matrik:'23DET011', nama:'Afiq Irfan bin Mohamad',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:2.70, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DBM30243','DEC20313','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 12 – Nur Dania: HPNM 3.20 → KB
+  { matrik:'23DET012', nama:'Nur Dania binti Kamaruddin',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:3.20, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DBM30243','DEC20313','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 13 – Hazwan Asyraf: HPNM 1.88 → KS
+  { matrik:'23DET013', nama:'Hazwan Asyraf bin Shamsul',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:1.88, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DEC20313'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233'] },
+
+  // 14 – Ameera Sofea: HPNM 2.55 → KB
+  { matrik:'23DET014', nama:'Ameera Sofea binti Johari',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:2.55, pnm:null, hpnmAkhir:null,
+    kursus:['MPU24051','DUE30072','DBS10042','DBM30243','DEC20313','DEE20153','DET20123'],
+    gred:null,
+    lulusSebelum:['MPU21072','DUW10042','DBM20233','DEE10273','DET10103','DET10213'] },
+
+  // 15 – Khairul Anuar: HPNM 0.80 → GB, dilarang daftar
+  { matrik:'23DET015', nama:'Khairul Anuar bin Hashim',
+    sesi:'Sesi 2-2026/2027', sem:2, hpnmMasuk:0.80, pnm:null, hpnmAkhir:null,
+    kursus:[],
+    gred:null,
+    lulusSebelum:[] },
+];
+
+// ══════════════════════════════════════════════
+//  FUNGSI ANALITIK
+// ══════════════════════════════════════════════
+function hitungKredit(semNo, kodsKursus) {
+  const sem = KURIKULUM[semNo];
+  if (!sem) return 0;
+  return kodsKursus.reduce((sum, kod) => {
+    const k = sem.kursus.find(c => c.kod === kod);
+    return sum + (k ? k.kredit : 0);
+  }, 0);
+}
+
+function cekPrasyarat(semNo, kodsKursus, lulusSebelum) {
+  const isu = [];
+  kodsKursus.forEach(kod => {
+    const pra = PRASYARAT[kod];
+    if (pra) {
+      pra.forEach(p => {
+        if (!lulusSebelum.includes(p)) {
+          isu.push({ kursus: kod, prasyarat: p });
+        }
+      });
+    }
+  });
+  return isu;
+}
+
+// ── Kedudukan Akademik (Sem 2 sahaja, berdasarkan hpnmMasuk dari Sem 1) ──
+function kedudukan(sem, hpnmMasuk) {
+  if (sem === 1) return '—';           // Sem 1: tiada kedudukan
+  if (hpnmMasuk === null) return '—';
+  if (hpnmMasuk < 1.00) return 'GB';  // Gagal Berhenti
+  if (hpnmMasuk < 2.00) return 'KS';  // Kedudukan Bersyarat
+  return 'KB';                         // Kedudukan Baik
+}
+
+// Had kredit maksimum (Sem 1 = standard 17+, Sem 2 = ikut kedudukan)
+function hadKredit(sem, ked) {
+  if (sem === 1) return 19;  // Sem 1: tiada had (max standard + buffer KK)
+  if (ked === 'GB') return 0;
+  if (ked === 'KS') return 12;
+  return 18;
+}
+
+function statusPelajar(p, ked, had) {
+  // Sem 1: tiada semak kedudukan — hanya semak pendaftaran kursus
+  if (p.sem === 1) {
+    if (p.kursus.length === 0) return 'Tiada Pendaftaran';
+    const kredit = hitungKredit(p.sem, p.kursus);
+    if (kredit < 1) return 'Tiada Pendaftaran';
+    return 'Lengkap';  // Sem 1 tidak ada isu prasyarat/had
+  }
+  // Sem 2: semak kedudukan + had + prasyarat
+  if (ked === 'GB') return 'Gagal Berhenti';
+  if (p.kursus.length === 0) return 'Tiada Pendaftaran';
+  const kredit = hitungKredit(p.sem, p.kursus);
+  const isuPra = cekPrasyarat(p.sem, p.kursus, p.lulusSebelum);
+  if (kredit > had) return 'Melebihi Had';
+  if (isuPra.length > 0) return 'Prasyarat';
+  if (kredit < 1) return 'Tiada Pendaftaran';
+  return 'Lengkap';
+}
+
+function enrichPelajar(p) {
+  const kredit  = hitungKredit(p.sem, p.kursus);
+  const sasaran = KURIKULUM[p.sem]?.kreditSasaran || 17;
+  const isuPra  = p.sem === 2 ? cekPrasyarat(p.sem, p.kursus, p.lulusSebelum) : [];
+  const ked     = kedudukan(p.sem, p.hpnmMasuk);
+  const had     = hadKredit(p.sem, ked);
+  const status  = statusPelajar(p, ked, had);
+  return { ...p, kredit, sasaran, isuPra, ked, had, status };
+}
+
+// ══════════════════════════════════════════════
+//  STAT CARDS
+// ══════════════════════════════════════════════
+// ── Ambil sesi semasa yang dipapar (ikut penapis)
+function getFilteredData() {
+  const cari      = document.getElementById('searchInput').value.toLowerCase();
+  const fSesi     = document.getElementById('filterSesi').value;
+  const fStatus   = document.getElementById('filterStatus').value;
+  const fKedudukan= document.getElementById('filterKedudukan').value;
+  return pelajarData.map(enrichPelajar).filter(p => {
+    const matchCari      = !cari      || p.matrik.toLowerCase().includes(cari) || p.nama.toLowerCase().includes(cari);
+    const matchSesi      = !fSesi     || p.sesi === fSesi;
+    const matchStatus    = !fStatus   || p.status === fStatus;
+    const matchKedudukan = !fKedudukan|| p.ked === fKedudukan;
+    return matchCari && matchSesi && matchStatus && matchKedudukan;
+  });
+}
+
+function renderStats() {
+  // Stat dikira berdasarkan sesi yang difilter (atau semua jika tiada filter)
+  const fSesi = document.getElementById('filterSesi').value;
+  const enriched = pelajarData.map(enrichPelajar).filter(p => !fSesi || p.sesi === fSesi);
+  const total   = [...new Set(enriched.map(p => p.matrik))].length;
+  const lengkap = enriched.filter(p => p.status === 'Lengkap').length;
+  const pra     = enriched.filter(p => p.status === 'Prasyarat').length;
+  const tiada   = enriched.filter(p => p.status === 'Tiada Pendaftaran').length;
+  const melebihi= enriched.filter(p => p.status === 'Melebihi Had').length;
+  const gb      = enriched.filter(p => p.ked === 'GB').length;
+  const ks      = enriched.filter(p => p.ked === 'KS').length;
+  const kb      = enriched.filter(p => p.ked === 'KB').length;
+  const isu     = pra + tiada + melebihi + gb;
+
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat-card">
+      <div class="label">Jumlah Pelajar</div>
+      <div class="value">${total}</div>
+      <div class="sub">Mentee terdaftar</div>
+    </div>
+    <div class="stat-card ok">
+      <div class="label">Kedudukan Baik (KB)</div>
+      <div class="value">${kb}</div>
+      <div class="sub">HPNM ≥ 2.00 · Max 18 kredit</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="label">Bersyarat / Amaran (KS)</div>
+      <div class="value">${ks}</div>
+      <div class="sub">HPNM &lt; 2.00 · Max 12 kredit</div>
+    </div>
+    <div class="stat-card alert">
+      <div class="label">Gagal Berhenti (GB)</div>
+      <div class="value">${gb}</div>
+      <div class="sub">PNM &lt; 1.00 · Perlu tindakan</div>
+    </div>
+    <div class="stat-card ok">
+      <div class="label">Pendaftaran Lengkap</div>
+      <div class="value">${lengkap}</div>
+      <div class="sub">Memenuhi semua syarat</div>
+    </div>
+    <div class="stat-card ${isu > 0 ? 'alert' : 'ok'}">
+      <div class="label">Jumlah Isu</div>
+      <div class="value">${isu}</div>
+      <div class="sub">${isu > 0 ? 'Memerlukan perhatian' : 'Tiada isu'}</div>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════════════════
+//  JADUAL UTAMA
+// ══════════════════════════════════════════════
+function renderTable() {
+  let data = getFilteredData();
+
+  const tbody = document.getElementById('mainTbody');
+  document.getElementById('tableCount').textContent = `${data.length} rekod dijumpai`;
+
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="11" class="no-data">🔍 Tiada rekod yang sepadan dengan carian anda.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = data.map((p, i) => {
+    const isSem1 = p.sem === 1;
+    const sasaran = isSem1 ? p.sasaran : p.had;
+    const pct = sasaran > 0 ? Math.min(100, Math.round((p.kredit / sasaran) * 100)) : 0;
+    const fillClass = p.kredit > sasaran ? 'fill-alert' : p.kredit >= sasaran * 0.8 ? 'fill-ok' : p.kredit >= sasaran * 0.5 ? 'fill-warn' : 'fill-alert';
+
+    let statusBadge = '';
+    if (p.status === 'Lengkap')             statusBadge = `<span class="badge badge-ok">✅ Lengkap</span>`;
+    else if (p.status === 'Prasyarat')      statusBadge = `<span class="badge badge-alert">🔴 Prasyarat</span>`;
+    else if (p.status === 'Melebihi Had')   statusBadge = `<span class="badge badge-alert">🔺 Melebihi Had</span>`;
+    else if (p.status === 'Gagal Berhenti') statusBadge = `<span class="badge badge-gagal">⛔ Gagal Berhenti</span>`;
+    else                                    statusBadge = `<span class="badge badge-alert">🚫 Tiada Pendaftaran</span>`;
+
+    // Sem 1: tiada kedudukan / had kredit — tunjuk PNM & keputusan
+    // Sem 2: tunjuk kedudukan & had kredit
+    let kedCell, hadCell;
+    if (isSem1) {
+      kedCell = `<span style="color:var(--muted);font-size:11px">Sem 1</span>`;
+      hadCell = `<span style="color:var(--muted);font-size:11px">—</span>`;
+    } else {
+      if (p.ked === 'KB')      kedCell = `<span class="badge badge-kb">🟢 KB</span>`;
+      else if (p.ked === 'KS') kedCell = `<span class="badge badge-ks">🟡 KS</span>`;
+      else                     kedCell = `<span class="badge badge-gagal">🔴 GB</span>`;
+      hadCell = p.ked === 'GB'
+        ? `<span style="color:#dc2626;font-weight:700">Dilarang</span>`
+        : `<span style="font-weight:700;color:var(--primary)">${p.had} kr</span>`;
+    }
+
+    // Sem 1: tunjuk HPNM akhir & PNM (keputusan ada)
+    // Sem 2: tunjuk HPNM masuk, PNM = belum ada
+    const hpnmVal  = isSem1 ? p.hpnmAkhir : p.hpnmMasuk;
+    const hpnmTxt  = hpnmVal != null ? hpnmVal.toFixed(2) : '—';
+    const hpnmColor= hpnmVal >= 2 ? '#16a34a' : hpnmVal >= 1 ? '#d97706' : hpnmVal > 0 ? '#dc2626' : '#64748b';
+    const pnmVal   = p.pnm;
+    const pnmTxt   = pnmVal != null ? pnmVal.toFixed(2) : '<span style="color:var(--muted);font-size:11px">Belum</span>';
+    const pnmColor = pnmVal != null ? (pnmVal >= 2 ? '#16a34a' : pnmVal >= 1 ? '#d97706' : '#dc2626') : '#64748b';
+    const kreditColor = p.kredit > sasaran ? '#dc2626' : p.kredit >= sasaran * 0.8 ? '#16a34a' : '#d97706';
+    const rowStyle = p.ked === 'GB' ? 'background:#fff5f5' : '';
+
+    return `
+      <tr style="${rowStyle}">
+        <td style="color:var(--muted)">${i+1}</td>
+        <td style="font-family:monospace;font-weight:700;color:var(--primary-light)">${p.matrik}</td>
+        <td style="font-weight:600">${p.nama}</td>
+        <td><span class="badge badge-sem" title="${p.sesi}">Sem ${p.sem}<br><span style="font-size:10px;font-weight:400;opacity:.8">${p.sesi.replace('Sesi ','')}</span></span></td>
+        <td style="font-weight:700;color:${hpnmColor};text-align:center">${hpnmTxt}</td>
+        <td style="font-weight:700;color:${pnmColor};text-align:center">${pnmTxt}</td>
+        <td style="text-align:center">${kedCell}</td>
+        <td style="text-align:center">${hadCell}</td>
+        <td>
+          <div class="kredit-bar">
+            <div class="kredit-track">
+              <div class="kredit-fill ${fillClass}" style="width:${Math.min(100,pct)}%"></div>
+            </div>
+            <span class="kredit-num" style="color:${kreditColor}">${p.kredit}${sasaran > 0 ? '/'+sasaran : ''}</span>
+          </div>
+        </td>
+        <td>${statusBadge}</td>
+        <td>
+          <button onclick='showDetail(${JSON.stringify(p.matrik)}, ${JSON.stringify(p.sesi)})'
+            style="padding:5px 12px;background:var(--primary);color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">
+            Lihat Detail
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  AMARAN & ISU
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+//  TAB PROGRES — perbandingan Sem 1 vs Sem 2
+// ══════════════════════════════════════════════
+function renderProgres() {
+  const allEnriched = pelajarData.map(enrichPelajar);
+  // Ambil senarai unik pelajar
+  const matrikList = [...new Set(allEnriched.map(p => p.matrik))];
+  const tbody = document.getElementById('progresTbody');
+
+  tbody.innerHTML = matrikList.map((matrik, i) => {
+    const s1 = allEnriched.find(p => p.matrik === matrik && p.sem === 1);
+    const s2 = allEnriched.find(p => p.matrik === matrik && p.sem === 2);
+    const nama = s1?.nama || s2?.nama || matrik;
+
+    function statusPill(s) {
+      if (!s) return '<span style="color:var(--muted);font-size:11px">—</span>';
+      const m = { 'Lengkap':'badge-ok','Prasyarat':'badge-alert','Melebihi Had':'badge-alert','Gagal Berhenti':'badge-gagal','Tiada Pendaftaran':'badge-alert' };
+      return `<span class="badge ${m[s.status]||'badge-warn'}" style="font-size:10px">${s.status}</span>`;
+    }
+    // pnm boleh null (Sem 2 belum ada keputusan)
+    function pnmCell(s) {
+      if (!s || s.pnm === null || s.pnm === undefined) return '<span style="color:var(--muted);font-style:italic;font-size:11px">Belum</span>';
+      const c = s.pnm >= 2 ? '#16a34a' : s.pnm >= 1 ? '#d97706' : '#dc2626';
+      return `<span style="font-weight:700;color:${c}">${s.pnm.toFixed(2)}</span>`;
+    }
+    function hpnmCell(val) {
+      if (val === null || val === undefined) return '<span style="color:var(--muted);font-style:italic;font-size:11px">—</span>';
+      const c = val >= 2 ? '#16a34a' : val >= 1 ? '#d97706' : '#dc2626';
+      return `<span style="font-weight:700;color:${c}">${val.toFixed(2)}</span>`;
+    }
+    function kreditCell(s) {
+      if (!s) return '<span style="color:var(--muted)">—</span>';
+      const ref = s.sem === 1 ? s.sasaran : (s.ked === 'GB' ? 0 : s.had);
+      const c = s.kredit >= s.sasaran ? '#16a34a' : s.kredit > 0 ? '#d97706' : '#dc2626';
+      return `<span style="color:${c};font-weight:700">${s.kredit}/${s.sasaran}</span>`;
+    }
+    // Tanda trend HPNM — hanya bandingkan hpnmAkhir Sem 1 dgn hpnmMasuk Sem 2 (sama nilai)
+    // Trend sebenar: bandingkan PNM Sem 1 vs hpnmMasuk Sem 2 (HPNM akhir Sem 1)
+    // Sem 2 belum ada hpnmAkhir → tunjuk HPNM masuk sahaja tanpa trend
+    let hpnmTerkiniCell = '<span style="color:var(--muted)">—</span>';
+    if (s2) {
+      // Paparkan HPNM masuk Sem 2 (= HPNM akhir Sem 1) dengan badge kedudukan
+      const kedColor = {'KB':'#16a34a','KS':'#d97706','GB':'#dc2626','—':'#64748b'}[s2.ked] || '#64748b';
+      const kedShort = s2.ked === '—' ? '' : ` <span style="font-size:10px;color:${kedColor}">(${s2.ked})</span>`;
+      hpnmTerkiniCell = hpnmCell(s2.hpnmMasuk) + kedShort;
+    } else if (s1 && s1.hpnmAkhir !== null) {
+      hpnmTerkiniCell = hpnmCell(s1.hpnmAkhir) + ' <span style="font-size:10px;color:var(--muted)">(Sem 1 akhir)</span>';
+    }
+
+    return `
+      <tr>
+        <td style="color:var(--muted)">${i+1}</td>
+        <td style="font-family:monospace;font-weight:700;color:var(--primary-light)">${matrik}</td>
+        <td style="font-weight:600">${nama}</td>
+        <td style="text-align:center">${pnmCell(s1)}</td>
+        <td style="text-align:center">${statusPill(s1)}</td>
+        <td style="text-align:center">${kreditCell(s1)}</td>
+        <td style="text-align:center">${s1 ? hpnmCell(s1.hpnmAkhir) : '—'}</td>
+        <td style="text-align:center">${pnmCell(s2)}</td>
+        <td style="text-align:center">${statusPill(s2)}</td>
+        <td style="text-align:center">${kreditCell(s2)}</td>
+        <td style="text-align:center">${hpnmTerkiniCell}</td>
+        <td>
+          <button onclick='showProgresDetail("${matrik}")'
+            style="padding:5px 10px;background:var(--primary-light);color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;font-weight:600">
+            Profil
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+function showProgresDetail(matrik) {
+  const allE = pelajarData.map(enrichPelajar);
+  const s1 = allE.find(p => p.matrik === matrik && p.sem === 1);
+  const s2 = allE.find(p => p.matrik === matrik && p.sem === 2);
+  const nama = s1?.nama || s2?.nama || matrik;
+
+  function blockSem(s, label) {
+    if (!s) return `<div style="flex:1;padding:14px;background:var(--surface);border-radius:8px;border:1px solid var(--border);color:var(--muted);text-align:center;font-size:13px">Tiada rekod ${label}</div>`;
+    const isSem1 = s.sem === 1;
+    const semKuri = KURIKULUM[s.sem];
+    const ked = s.ked;
+    const kedColor = {'KB':'#16a34a','KS':'#d97706','GB':'#dc2626','—':'#64748b'}[ked] || '#64748b';
+    const kedLabel = {'KB':'🟢 KB – Kedudukan Baik','KS':'🟡 KS – Bersyarat','GB':'🔴 GB – Gagal Berhenti','—':'Tiada (Sem 1)'}[ked] || ked;
+
+    // nilai null-safe
+    const hpnmMasukTxt = s.hpnmMasuk != null ? s.hpnmMasuk.toFixed(2) : '—';
+    const hpnmMasukC   = s.hpnmMasuk != null ? (s.hpnmMasuk>=2?'#16a34a':s.hpnmMasuk>=1?'#d97706':'#dc2626') : '#64748b';
+    const pnmTxt       = s.pnm != null ? s.pnm.toFixed(2) : 'Belum keluar';
+    const pnmC         = s.pnm != null ? (s.pnm>=2?'#16a34a':s.pnm>=1?'#d97706':'#dc2626') : '#64748b';
+    const hpnmAkhirTxt = s.hpnmAkhir != null ? s.hpnmAkhir.toFixed(2) : 'Belum keluar';
+    const hpnmAkhirC   = s.hpnmAkhir != null ? (s.hpnmAkhir>=2?'#16a34a':s.hpnmAkhir>=1?'#d97706':'#dc2626') : '#64748b';
+
+    // Kursus rows — Sem 1 tunjuk gred, Sem 2 tunjuk komponen + prasyarat
+    const GRED_WARNA = {'A':'#16a34a','A-':'#16a34a','B+':'#2563a8','B':'#2563a8','C+':'#d97706','C':'#d97706','D':'#dc2626','E':'#991b1b'};
+    const LULUS_GRED = ['A','A-','B+','B','B-','C+','C','D'];
+    const kursusRows = s.kursus.length > 0 ? s.kursus.map(kod => {
+      const k = semKuri?.kursus.find(c => c.kod === kod);
+      if (isSem1) {
+        const gred = s.gred ? (s.gred[kod] || '—') : '—';
+        const lulus = LULUS_GRED.includes(gred);
+        const gC = GRED_WARNA[gred] || '#64748b';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;border-radius:4px;font-size:11px;${!lulus&&gred!=='—'?'background:#fff5f5':''}">
+          <span style="font-family:monospace;color:var(--primary-light);font-weight:700;min-width:80px">${kod}</span>
+          <span style="flex:1">${k?k.nama:'—'}</span>
+          <span style="font-weight:800;color:${gC};min-width:28px;text-align:right">${gred}</span>
+          <span style="font-size:10px;margin-left:5px;color:${lulus?'#16a34a':gred!=='—'?'#dc2626':'#64748b'}">${lulus?'✓':gred!=='—'?'✗':''}</span>
+        </div>`;
+      } else {
+        const hasPra = s.isuPra.some(i => i.kursus === kod);
+        const kompBg = k?.komponen==='COMPULSORY'?'#fde68a':k?.komponen==='COMMON CORE'?'#bfdbfe':'#ddd6fe';
+        const kompC  = k?.komponen==='COMPULSORY'?'#92400e':k?.komponen==='COMMON CORE'?'#1e40af':'#5b21b6';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 8px;border-radius:4px;font-size:11px;${hasPra?'background:#fee2e2':''}">
+          <span style="font-family:monospace;color:var(--primary-light);font-weight:700;min-width:80px">${kod}</span>
+          <span style="flex:1">${k?k.nama:'—'} ${k?`<span style="font-size:9px;padding:1px 4px;border-radius:3px;background:${kompBg};color:${kompC}">${k.komponen}</span>`:''} ${hasPra?'<strong style="color:#dc2626;font-size:10px">[PRASYARAT]</strong>':''}</span>
+          <span style="font-weight:700;color:var(--primary)">${k?k.kredit+'kr':'—'}</span>
+        </div>`;
+      }
+    }).join('') : `<div style="color:var(--muted);font-size:11px;padding:6px">${ked==='GB'?'⛔ Pelajar dilarang mendaftar (GB).':'Tiada kursus didaftar.'}</div>`;
+
+    const kursusTitle = isSem1 ? '📋 Kursus & Keputusan Sem 1' : '📋 Kursus Didaftar Sem 2';
+
+    return `
+      <div style="flex:1;min-width:280px;padding:14px;background:var(--surface);border-radius:8px;border:1px solid var(--border)">
+        <div style="font-weight:800;font-size:13px;color:var(--primary);margin-bottom:10px">${label} · ${s.sesi}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-bottom:10px;font-size:12px">
+          ${isSem1
+            ? `<div><span style="color:var(--muted)">PNM Sem 1</span><br><strong style="color:${pnmC}">${pnmTxt}</strong></div>
+               <div><span style="color:var(--muted)">HPNM Akhir</span><br><strong style="color:${hpnmAkhirC}">${hpnmAkhirTxt}</strong></div>
+               <div><span style="color:var(--muted)">Kredit Daftar</span><br><strong style="color:${s.kredit>=s.sasaran?'#16a34a':'#d97706'}">${s.kredit}/${s.sasaran} kr</strong></div>
+               <div><span style="color:var(--muted)">Kedudukan Sem 2</span><br><strong style="color:${hpnmAkhirC}">${s.hpnmAkhir!=null?(s.hpnmAkhir<1?'🔴 GB':s.hpnmAkhir<2?'🟡 KS':'🟢 KB'):'—'}</strong></div>`
+            : `<div><span style="color:var(--muted)">HPNM Masuk</span><br><strong style="color:${hpnmMasukC}">${hpnmMasukTxt}</strong></div>
+               <div><span style="color:var(--muted)">Kedudukan</span><br><strong style="color:${kedColor}">${kedLabel}</strong></div>
+               <div><span style="color:var(--muted)">Had Kredit</span><br><strong style="color:var(--primary)">${ked==='GB'?'<span style="color:#dc2626">Dilarang</span>':s.had+' kr'}</strong></div>
+               <div><span style="color:var(--muted)">Kredit Daftar</span><br><strong style="color:${s.kredit>s.had?'#dc2626':s.kredit>=s.sasaran?'#16a34a':'#d97706'}">${s.kredit}/${s.sasaran} kr</strong></div>
+               <div><span style="color:var(--muted)">PNM Sem 2</span><br><strong style="color:#64748b;font-style:italic">Belum keluar</strong></div>
+               <div><span style="color:var(--muted)">Status</span><br><span class="badge ${ {'Lengkap':'badge-ok','Prasyarat':'badge-alert','Gagal Berhenti':'badge-gagal','Melebihi Had':'badge-alert','Tiada Pendaftaran':'badge-alert'}[s.status] || 'badge-warn' }" style="font-size:10px">${s.status}</span></div>`
+          }
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--primary);margin-bottom:4px">${kursusTitle}</div>
+        ${kursusRows}
+      </div>`;
+  }
+
+  document.getElementById('modalTitle').textContent = `Profil Akademik – ${matrik} · ${nama}`;
+  document.getElementById('modalBody').innerHTML = `
+    <div style="display:flex;gap:14px;flex-wrap:wrap">
+      ${blockSem(s1,'Semester 1')}
+      ${blockSem(s2,'Semester 2')}
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+// ══════════════════════════════════════════════
+//  AMARAN & ISU
+// ══════════════════════════════════════════════
+function renderAmaran() {
+  // Amaran ikut sesi yang difilter
+  const fSesi = document.getElementById('filterSesi').value;
+  const enriched = pelajarData.map(enrichPelajar).filter(p => !fSesi || p.sesi === fSesi);
+  const items = [];
+
+  enriched.forEach(p => {
+    // Sem 1 tiada kedudukan — skip amaran GB/KS untuk Sem 1
+    // ① Gagal Berhenti — Sem 2 sahaja
+    if (p.ked === 'GB' && p.sem === 2) {
+      items.push({ type:'alert', icon:'⛔', pri:0,
+        tajuk:`Gagal Berhenti (Sem 2) – ${p.nama} (${p.matrik})`,
+        msg:`HPNM masuk Sem 2: <strong>${p.hpnmMasuk.toFixed(2)}</strong> (di bawah 1.00). Pelajar <strong>TIDAK DIBENARKAN</strong> mendaftar kursus. Sila rujuk Unit Akademik.` });
+    }
+    // ② KS – Sem 2 sahaja
+    if (p.ked === 'KS' && p.sem === 2) {
+      items.push({ type:'warn', icon:'🟡', pri:1,
+        tajuk:`Kedudukan Bersyarat (KS) Sem 2 – ${p.nama} (${p.matrik})`,
+        msg:`HPNM masuk Sem 2: <strong>${p.hpnmMasuk.toFixed(2)}</strong> (di bawah 2.00). Had kredit maksimum: <strong>12 kredit</strong>. Pelajar perlu bimbingan akademik.` });
+    }
+    // ② Sem 1 — kesan kepada Sem 2 (PNM Sem 1 rendah)
+    if (p.sem === 1 && p.pnm !== null && p.pnm < 2.00) {
+      const isGB = p.pnm < 1.00;
+      items.push({ type: isGB ? 'alert' : 'warn', icon: isGB ? '⛔' : '🟡', pri: isGB ? 0 : 1,
+        tajuk:`${isGB ? 'Gagal Berhenti' : 'Bersyarat Sem 2'} – ${p.nama} (${p.matrik})`,
+        msg:`PNM Sem 1: <strong>${p.pnm.toFixed(2)}</strong>. ${isGB ? 'Pelajar DILARANG mendaftar Sem 2.' : 'Had kredit Sem 2: <strong>12 kredit</strong> sahaja (KS).'}` });
+    }
+    // ③ Melebihi had kredit
+    if (p.status === 'Melebihi Had') {
+      items.push({ type:'alert', icon:'🔺', pri:1,
+        tajuk:`Melebihi Had Kredit – ${p.nama} (${p.matrik})`,
+        msg:`Pelajar mendaftar <strong>${p.kredit} kredit</strong> melebihi had ${p.ked} iaitu <strong>${p.had} kredit</strong>. Sila drop kursus yang berlebihan.` });
+    }
+    // ④ Tiada Pendaftaran
+    if (p.status === 'Tiada Pendaftaran') {
+      items.push({ type:'alert', icon:'🚫', pri:2,
+        tajuk:`Tiada Pendaftaran – ${p.nama} (${p.matrik})`,
+        msg:`Pelajar Semester ${p.sem} belum mendaftar sebarang kursus. Sila hubungi pelajar segera.` });
+    }
+    // ⑤ Isu Prasyarat
+    if (p.isuPra.length > 0) {
+      p.isuPra.forEach(isu => {
+        const nm = KURIKULUM[p.sem]?.kursus.find(c => c.kod === isu.kursus)?.nama || isu.kursus;
+        items.push({ type:'alert', icon:'🔴', pri:2,
+          tajuk:`Isu Prasyarat – ${p.nama} (${p.matrik})`,
+          msg:`Mendaftar <strong>${isu.kursus} – ${nm}</strong> tanpa memenuhi prasyarat <strong>${isu.prasyarat}</strong>. Sila semak rekod akademik.` });
+      });
+    }
+  });
+
+  // Susun mengikut keutamaan
+  items.sort((a,b) => a.pri - b.pri);
+
+  const list = document.getElementById('amaranList');
+  document.getElementById('amaranCount').textContent = `${items.length} isu dijumpai`;
+
+  if (items.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:40px;color:var(--green);font-weight:700;font-size:15px">✅ Tiada isu pendaftaran. Semua pelajar dalam keadaan baik!</div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(it => `
+    <div class="amaran-item type-${it.type}">
+      <div class="amaran-icon">${it.icon}</div>
+      <div class="amaran-text">
+        <strong>${it.tajuk}</strong>
+        <span>${it.msg}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════
+//  STRUKTUR KURIKULUM
+// ══════════════════════════════════════════════
+function renderKurikulum() {
+  let html = '';
+  [1,2].forEach(semNo => {
+    const sem = KURIKULUM[semNo];
+    let totalKredit = sem.kursus.reduce((s,c) => s + c.kredit, 0);
+    let totalL = sem.kursus.reduce((s,c) => s + c.l, 0);
+    let totalP = sem.kursus.reduce((s,c) => s + c.p, 0);
+    let totalT = sem.kursus.reduce((s,c) => s + c.t, 0);
+
+    const kompLabel = { 'COMPULSORY':'comp-compulsory','COMMON CORE':'comp-common','DISCIPLINE':'comp-discipline' };
+    let rows = '';
+    let lastKomp = '';
+    sem.kursus.forEach(k => {
+      const kompClass = kompLabel[k.komponen] || '';
+      const kompCell = k.komponen !== lastKomp
+        ? `<span class="comp-badge ${kompClass}">${k.komponen}</span>`
+        : '';
+      lastKomp = k.komponen;
+      rows += `
+        <tr>
+          <td>${kompCell}</td>
+          <td style="font-family:monospace;color:var(--primary-light);font-weight:700">${k.kod}</td>
+          <td>${k.nama}</td>
+          <td>${k.l || '—'}</td>
+          <td>${k.p || '—'}</td>
+          <td>${k.t || '—'}</td>
+          <td style="font-weight:700;color:var(--primary)">${k.kredit || '—'}</td>
+        </tr>`;
+    });
+
+    html += `
+      <div class="kuri-sem-title">📖 ${sem.judul}</div>
+      <table class="kuri-table">
+        <thead>
+          <tr>
+            <th>Komponen</th><th>Kod Kursus</th><th>Nama Kursus</th>
+            <th>L</th><th>P</th><th>T</th><th>Jam Kredit</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+          <tr class="total-row">
+            <td colspan="3" style="font-weight:800">JUMLAH KESELURUHAN</td>
+            <td>${totalL}</td><td>${totalP}</td><td>${totalT}</td>
+            <td style="font-weight:800;color:var(--primary)">${totalKredit}</td>
+          </tr>
+        </tbody>
+      </table>
+      ${sem.nota ? `<p class="kuri-note">${sem.nota}</p>` : ''}
+    `;
+  });
+  document.getElementById('kuriSection').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════
+//  MODAL DETAIL PELAJAR
+// ══════════════════════════════════════════════
+function showDetail(matrik, sesi) {
+  const p = enrichPelajar(pelajarData.find(x => x.matrik === matrik && (!sesi || x.sesi === sesi)));
+  const semKuri = KURIKULUM[p.sem];
+  const isSem1  = p.sem === 1;
+
+  const statusColor = p.status === 'Lengkap' ? 'var(--green)' : p.status === 'Prasyarat' || p.status === 'Gagal Berhenti' || p.status === 'Melebihi Had' ? 'var(--red)' : 'var(--yellow)';
+  const statusEmoji = {'Lengkap':'✅','Prasyarat':'🔴','Gagal Berhenti':'⛔','Melebihi Had':'🔺','Tiada Pendaftaran':'🚫'}[p.status] || '⚠️';
+
+  // ─── Baris info atas berbeza Sem 1 vs Sem 2 ───
+  let infoExtra = '';
+  if (isSem1) {
+    // Sem 1: tunjuk HPNM akhir & PNM keputusan
+    const hpnmC = p.hpnmAkhir >= 2 ? 'var(--green)' : p.hpnmAkhir >= 1 ? 'var(--yellow)' : 'var(--red)';
+    const pnmC  = p.pnm >= 2 ? 'var(--green)' : p.pnm >= 1 ? 'var(--yellow)' : 'var(--red)';
+    infoExtra = `
+      <div class="modal-info-item"><div class="lbl">PNM Sem 1</div><div class="val" style="color:${pnmC}">${p.pnm.toFixed(2)}</div></div>
+      <div class="modal-info-item"><div class="lbl">HPNM Akhir Sem 1</div><div class="val" style="color:${hpnmC}">${p.hpnmAkhir.toFixed(2)}</div></div>
+      <div class="modal-info-item"><div class="lbl">Kedudukan Masuk Sem 2</div><div class="val" style="color:${p.hpnmAkhir>=2?'var(--green)':p.hpnmAkhir>=1?'var(--yellow)':'var(--red)'}">
+        ${p.hpnmAkhir < 1.00 ? '🔴 GB – Gagal Berhenti' : p.hpnmAkhir < 2.00 ? '🟡 KS – Bersyarat' : '🟢 KB – Kedudukan Baik'}
+      </div></div>
+      <div class="modal-info-item"><div class="lbl">Had Kredit Sem 2</div><div class="val">
+        ${p.hpnmAkhir < 1.00 ? '<span style="color:var(--red)">Dilarang daftar</span>' : p.hpnmAkhir < 2.00 ? '12 kredit (KS)' : '18 kredit (KB)'}
+      </div></div>`;
+  } else {
+    // Sem 2: tunjuk HPNM masuk, kedudukan & had
+    const kedLabel = {'KB':'🟢 Kedudukan Baik (KB)','KS':'🟡 Kedudukan Bersyarat (KS)','GB':'🔴 Gagal Berhenti (GB)','—':'—'}[p.ked] || p.ked;
+    const kedColor = {'KB':'var(--green)','KS':'var(--yellow)','GB':'var(--red)','—':'var(--muted)'}[p.ked];
+    infoExtra = `
+      <div class="modal-info-item"><div class="lbl">HPNM Masuk (dari Sem 1)</div><div class="val" style="color:${p.hpnmMasuk>=2?'var(--green)':p.hpnmMasuk>=1?'var(--yellow)':'var(--red)'}">${p.hpnmMasuk.toFixed(2)}</div></div>
+      <div class="modal-info-item"><div class="lbl">PNM Sem 2</div><div class="val" style="color:var(--muted);font-style:italic">Belum keluar</div></div>
+      <div class="modal-info-item"><div class="lbl">Kedudukan Akademik</div><div class="val" style="color:${kedColor}">${kedLabel}</div></div>
+      <div class="modal-info-item"><div class="lbl">Had Kredit Maksimum</div><div class="val" style="color:var(--primary)">${p.ked === 'GB' ? '<span style="color:var(--red)">Tidak dibenarkan</span>' : p.had + ' kredit'}</div></div>`;
+  }
+
+  // ─── Senarai kursus ───
+  let courseRows = '';
+  if (isSem1) {
+    // Sem 1: tunjuk kursus + gred keputusan
+    const GRED_WARNA = {'A':'#16a34a','A-':'#16a34a','B+':'#2563a8','B':'#2563a8','B-':'#2563a8','C+':'#d97706','C':'#d97706','D':'#dc2626','E':'#991b1b','TL':'#991b1b'};
+    const LULUS_GRED = ['A','A-','B+','B','B-','C+','C','D'];
+    if (p.kursus.length > 0 && semKuri) {
+      p.kursus.forEach(kod => {
+        const k = semKuri.kursus.find(c => c.kod === kod);
+        const gred = p.gred ? (p.gred[kod] || '—') : '—';
+        const lulus = LULUS_GRED.includes(gred);
+        const gWarna = GRED_WARNA[gred] || 'var(--muted)';
+        const kompBadge = k ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:#e0e7ef;color:#374151">${k.komponen}</span>` : '';
+        courseRows += `
+          <div class="modal-course-row" style="${!lulus && gred!=='—' ? 'background:#fff5f5' : ''}">
+            <span class="ccode">${kod}</span>
+            <span class="cname">${k ? k.nama : '—'} ${kompBadge}</span>
+            <span style="font-weight:800;color:${gWarna};min-width:32px;text-align:right">${gred}</span>
+            <span style="font-size:10px;margin-left:6px;color:${lulus?'#16a34a':gred!=='—'?'#dc2626':'var(--muted)'}">${lulus?'✓ Lulus':gred!=='—'?'✗ Gagal':''}</span>
+          </div>`;
+      });
+    } else {
+      courseRows = `<div style="color:var(--muted);padding:12px;text-align:center;font-size:13px">Tiada kursus didaftarkan.</div>`;
+    }
+  } else {
+    // Sem 2: tunjuk kursus didaftar + semua kursus sem 2 (untuk cek compulsory)
+    const allSem2 = semKuri ? semKuri.kursus : [];
+    const compulsoryKods = allSem2.filter(k => k.komponen === 'COMPULSORY').map(k => k.kod);
+    const didaftar = new Set(p.kursus);
+
+    // Kursus yang didaftar
+    if (p.kursus.length > 0 && semKuri) {
+      p.kursus.forEach(kod => {
+        const k = semKuri.kursus.find(c => c.kod === kod);
+        const hasPra = p.isuPra.some(i => i.kursus === kod);
+        const isComp = k && k.komponen === 'COMPULSORY';
+        const kompColor = isComp ? '#92400e' : k && k.komponen === 'COMMON CORE' ? '#1e40af' : '#5b21b6';
+        const kompBg = isComp ? '#fde68a' : k && k.komponen === 'COMMON CORE' ? '#bfdbfe' : '#ddd6fe';
+        courseRows += `
+          <div class="modal-course-row" style="${hasPra ? 'background:#fee2e2' : ''}">
+            <span class="ccode">${kod}</span>
+            <span class="cname">${k ? k.nama : '—'}
+              <span style="font-size:10px;padding:1px 5px;border-radius:3px;background:${kompBg};color:${kompColor}">${k ? k.komponen : '—'}</span>
+              ${hasPra ? '<span style="color:var(--red);font-weight:700;font-size:10px"> [ISU PRASYARAT]</span>' : ''}
+            </span>
+            <span class="ckredit">${k ? k.kredit + ' kr' : '—'}</span>
+          </div>`;
+      });
+    } else if (p.ked !== 'GB') {
+      courseRows = `<div style="color:var(--muted);padding:12px;text-align:center;font-size:13px">Tiada kursus didaftarkan.</div>`;
+    }
+
+    // Kursus wajib yang BELUM didaftar
+    const missingComp = compulsoryKods.filter(k => !didaftar.has(k));
+    if (missingComp.length > 0) {
+      courseRows += `<div style="font-size:11px;font-weight:700;color:var(--red);margin:10px 0 4px">⚠️ Kursus COMPULSORY belum didaftar:</div>`;
+      missingComp.forEach(kod => {
+        const k = semKuri.kursus.find(c => c.kod === kod);
+        courseRows += `
+          <div class="modal-course-row" style="background:#fff5f5;border-left:3px solid var(--red)">
+            <span class="ccode" style="color:var(--red)">${kod}</span>
+            <span class="cname">${k ? k.nama : '—'} <span style="font-size:10px;background:#fde68a;color:#92400e;padding:1px 5px;border-radius:3px">COMPULSORY</span></span>
+            <span class="ckredit" style="color:var(--red)">${k ? k.kredit + ' kr' : '—'}</span>
+          </div>`;
+      });
+    }
+  }
+
+  // ─── Amaran ───
+  let amaranHtml = `<div style="margin-top:14px">`;
+  if (p.ked === 'GB') {
+    amaranHtml += `<div class="amaran-item type-alert" style="font-size:12px"><span>⛔</span><div><strong>Gagal Berhenti (Sem 2)</strong><br>HPNM ${p.hpnmMasuk.toFixed(2)} di bawah 1.00. Pelajar TIDAK DIBENARKAN mendaftar. Rujuk Unit Akademik.</div></div>`;
+  }
+  if (p.ked === 'KS') {
+    amaranHtml += `<div class="amaran-item type-warn" style="font-size:12px"><span>🟡</span><div><strong>Kedudukan Bersyarat (KS) – Sem 2</strong><br>HPNM masuk ${p.hpnmMasuk.toFixed(2)} di bawah 2.00. Had kredit maksimum: 12 kredit.</div></div>`;
+  }
+  if (p.status === 'Melebihi Had') {
+    amaranHtml += `<div class="amaran-item type-alert" style="font-size:12px"><span>🔺</span><div><strong>Melebihi Had Kredit</strong><br>Mendaftar ${p.kredit} kredit melebihi had ${p.had} kredit. Sila drop kursus berlebihan.</div></div>`;
+  }
+  if (p.status === 'Tiada Pendaftaran' && p.ked !== 'GB') {
+    amaranHtml += `<div class="amaran-item type-alert" style="font-size:12px"><span>🚫</span><div><strong>Tiada Pendaftaran</strong><br>Pelajar belum mendaftar sebarang kursus. Sila hubungi segera.</div></div>`;
+  }
+  p.isuPra.forEach(isu => {
+    amaranHtml += `<div class="amaran-item type-alert" style="font-size:12px"><span>🔴</span><div><strong>Prasyarat: ${isu.kursus}</strong><br>Prasyarat ${isu.prasyarat} belum lulus/didaftar.</div></div>`;
+  });
+  if (p.status === 'Lengkap') {
+    amaranHtml += `<div class="amaran-item type-info" style="font-size:12px"><span>✅</span><div><strong>Pendaftaran ${isSem1 ? 'Sem 1' : 'Sem 2'} Lengkap</strong><br>${isSem1 ? 'Keputusan peperiksaan telah direkod.' : 'Pelajar memenuhi semua syarat kredit dan prasyarat.'}</div></div>`;
+  }
+  // Sem 1 khusus: tunjuk amaran keputusan rendah
+  if (isSem1 && p.pnm !== null && p.pnm < 2.00) {
+    const ksGb = p.pnm < 1.00 ? 'GB – Gagal Berhenti' : 'KS – Bersyarat';
+    const type = p.pnm < 1.00 ? 'type-alert' : 'type-warn';
+    const icon = p.pnm < 1.00 ? '⛔' : '🟡';
+    amaranHtml += `<div class="amaran-item ${type}" style="font-size:12px"><span>${icon}</span><div><strong>Kesan ke Sem 2: ${ksGb}</strong><br>PNM Sem 1 = ${p.pnm.toFixed(2)}. ${p.pnm < 1.00 ? 'Pelajar DILARANG mendaftar Sem 2.' : 'Had kredit Sem 2: 12 kredit sahaja.'}</div></div>`;
+  }
+  amaranHtml += `</div>`;
+
+  document.getElementById('modalTitle').textContent = `Detail Pelajar – ${p.matrik} · ${isSem1 ? 'Sesi 1' : 'Sesi 2'} 2026/2027`;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-info-grid">
+      <div class="modal-info-item"><div class="lbl">No. Matrik</div><div class="val" style="font-family:monospace;color:var(--primary-light)">${p.matrik}</div></div>
+      <div class="modal-info-item"><div class="lbl">Nama Pelajar</div><div class="val">${p.nama}</div></div>
+      <div class="modal-info-item"><div class="lbl">Sesi / Semester</div><div class="val"><span class="badge badge-sem">${p.sesi} (Sem ${p.sem})</span></div></div>
+      <div class="modal-info-item"><div class="lbl">Kredit Didaftar</div><div class="val" style="color:${statusColor}">${p.kredit} kredit</div></div>
+      <div class="modal-info-item"><div class="lbl">Status Pendaftaran</div><div class="val" style="color:${statusColor}">${statusEmoji} ${p.status}</div></div>
+      <div class="modal-info-item"><div class="lbl">Bilangan Kursus</div><div class="val">${p.kursus.length} kursus</div></div>
+      ${infoExtra}
+    </div>
+    <div class="modal-courses-title">${isSem1 ? '📋 Kursus Sem 1 & Keputusan Peperiksaan' : '📋 Kursus Sem 2 Didaftar (Semak Compulsory)'}</div>
+    ${courseRows}
+    ${amaranHtml}
+  `;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+// ── Tutup modal jika klik luar
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+// ══════════════════════════════════════════════
+//  TAB NAVIGATION
+// ══════════════════════════════════════════════
+function showTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'progres') renderProgres();
+}
+
+// ══════════════════════════════════════════════
+//  RESET & EXPORT
+// ══════════════════════════════════════════════
+function resetFilter() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('filterSesi').value = '';
+  document.getElementById('filterStatus').value = '';
+  document.getElementById('filterKedudukan').value = '';
+  renderTable();
+  renderStats();
+  renderAmaran();
+}
+
+function exportCSV() {
+  const enriched = getFilteredData();
+  const header = ['No. Matrik','Nama Pelajar','Sesi','Semester','HPNM Masuk','PNM','HPNM Akhir','Kedudukan','Had Kredit','Kredit Didaftar','Bil. Kursus','Status Pendaftaran'];
+  const rows = enriched.map(p => [
+    p.matrik, `"${p.nama}"`, p.sesi, p.sem, p.hpnmMasuk.toFixed(2), p.pnm.toFixed(2), p.hpnmAkhir.toFixed(2), p.ked, p.ked==='GB'?0:p.had, p.kredit, p.kursus.length, p.status
+  ]);
+  const csv = [header, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a'); a.href = url;
+  a.download = 'pemantauan-pelajar-det.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════════
+//  JAM MASA NYATA
+// ══════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('ms-MY', {weekday:'long', year:'numeric', month:'long', day:'numeric'}) +
+    ' ' + now.toLocaleTimeString('ms-MY');
+}
+document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+// Pasang event renderStats apabila filterSesi berubah
+document.getElementById('filterSesi').addEventListener('change', () => { renderStats(); renderAmaran(); });
+
+// ══════════════════════════════════════════════
+//  INISIALISASI
+// ══════════════════════════════════════════════
+renderStats();
+renderTable();
+renderAmaran();
+renderKurikulum();
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
